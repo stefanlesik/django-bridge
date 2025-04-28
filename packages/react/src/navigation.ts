@@ -200,6 +200,7 @@ export function useNavigationController(
 
   const nextFetchId = useRef(1);
   const lastReceivedFetchId = useRef(1);
+  const isFetchInProgress = useRef(false);
 
   const fetch = useCallback(
     async (
@@ -213,6 +214,7 @@ export function useNavigationController(
       // when the requests were sent, the older requests don't replace newer ones
       nextFetchId.current += 1;
       const thisFetchId = nextFetchId.current;
+      isFetchInProgress.current = true;
 
       const response = await fetcher();
 
@@ -229,6 +231,8 @@ export function useNavigationController(
       }
 
       await handleResponse(response, url, pushState, neverReload);
+
+      isFetchInProgress.current = false;
     },
     [handleResponse]
   );
@@ -275,16 +279,19 @@ export function useNavigationController(
     [fetch, parent]
   );
 
-  const refreshProps = useCallback(
-    (): Promise<void> =>
-      fetch(
-        () => djangoGet(currentFrame.path, !!parent),
-        currentFrame.path,
-        false,
-        true
-      ),
-    [currentFrame.path, fetch, parent]
-  );
+  const refreshProps = useCallback((): Promise<void> => {
+    // Only make a new fetch request if there is not a fetch request currently in progress
+    if (isFetchInProgress.current) {
+      return Promise.resolve();
+    }
+
+    return fetch(
+      () => djangoGet(currentFrame.path, !!parent),
+      currentFrame.path,
+      false,
+      true,
+    );
+  }, [currentFrame.path, fetch, parent]);
 
   useEffect(() => {
     // Load initial response
