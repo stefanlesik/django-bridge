@@ -25,7 +25,7 @@ export interface NavigationController {
     response: DjangoBridgeResponse,
     path: string,
     pushState?: boolean,
-    neverReload?: boolean,
+    neverReload?: boolean
   ) => Promise<void>;
   navigate: (url: string, pushState?: boolean) => Promise<void>;
   replacePath: (frameId: number, path: string) => void;
@@ -42,11 +42,11 @@ export function useNavigationController(
     onNavigation?: (
       frame: Frame | null,
       newFrame: boolean,
-      messages: Message[],
+      messages: Message[]
     ) => void;
     onOverlayClose?: (messages: Message[]) => void;
     onServerError?: (kind: "server" | "network") => void;
-  } = {},
+  } = {}
 ): NavigationController {
   nextFrameId += 1;
   const [currentFrame, setCurrentFrame] = useState<Frame>({
@@ -69,7 +69,7 @@ export function useNavigationController(
       context: Record<string, unknown>,
       messages: Message[],
       pushState = true,
-      reload = true,
+      reload = true
     ) => {
       let frameId = currentFrame.id;
 
@@ -98,7 +98,7 @@ export function useNavigationController(
               prevScrollPosition: scrollPosition,
             },
             "",
-            path,
+            path
           );
 
           // set the scroll position
@@ -120,7 +120,7 @@ export function useNavigationController(
         callbacks.onNavigation(nextFrame, newFrame, messages);
       }
     },
-    [callbacks, currentFrame.id, currentFrame.view, parent],
+    [callbacks, currentFrame.id, currentFrame.view, parent]
   );
 
   const [redirectTo, setRedirectTo] = useState<null | string>(null);
@@ -130,7 +130,7 @@ export function useNavigationController(
       response: DjangoBridgeResponse,
       path: string,
       pushState = true,
-      neverReload = false,
+      neverReload = false
     ): Promise<void> => {
       if (response.action === "reload") {
         if (!parent) {
@@ -174,7 +174,7 @@ export function useNavigationController(
           context,
           response.messages,
           pushState,
-          reload,
+          reload
         );
       } else if (response.action === "close-overlay") {
         // Call overlay close callback
@@ -195,7 +195,7 @@ export function useNavigationController(
 
       return Promise.resolve();
     },
-    [callbacks, currentFrame, parent, pushFrame, unpack],
+    [callbacks, currentFrame, parent, pushFrame, unpack]
   );
 
   const nextFetchId = useRef(1);
@@ -207,7 +207,7 @@ export function useNavigationController(
       fetcher: () => Promise<DjangoBridgeResponse>,
       url: string,
       pushState: boolean,
-      neverReload = false,
+      neverReload = false
     ) => {
       // Get a fetch ID
       // We do this so that if responses come back in a different order to
@@ -234,7 +234,7 @@ export function useNavigationController(
 
       isFetchInProgress.current = false;
     },
-    [handleResponse],
+    [handleResponse]
   );
 
   const navigate = useCallback(
@@ -254,7 +254,7 @@ export function useNavigationController(
 
       return fetch(() => djangoGet(path, !!parent), path, pushState);
     },
-    [fetch, parent],
+    [fetch, parent]
   );
 
   const replacePath = useCallback(
@@ -270,13 +270,13 @@ export function useNavigationController(
         }
       }
     },
-    [currentFrame, parent],
+    [currentFrame, parent]
   );
 
   const submitForm = useCallback(
     (url: string, data: FormData): Promise<void> =>
       fetch(() => djangoPost(url, data, !!parent), url, true),
-    [fetch, parent],
+    [fetch, parent]
   );
 
   const refreshProps = useCallback((): Promise<void> => {
@@ -289,7 +289,7 @@ export function useNavigationController(
       () => djangoGet(currentFrame.path, !!parent),
       currentFrame.path,
       false,
-      true,
+      true
     );
   }, [currentFrame.path, fetch, parent]);
 
